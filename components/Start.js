@@ -6,6 +6,7 @@ const Start = ({ navigation }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('');
   const colorBtn = ['#090C08', '#474056', '#8A95A5', '#B9C6AE'];
+  const isSelected = (selected) => selected == color;
   return (
     <View style={styles.container}>
       {/* using ImageBackground component from reactnative library to set background image */}
@@ -30,10 +31,13 @@ const Start = ({ navigation }) => {
           <View style={styles.colours}>
             {/* change state of color when each color is selected */}
             {colorBtn.map((colorBtn, index) => (
-              <TouchableOpacity
+              <View
                 key={index}
-                style={[styles.colorButton, { backgroundColor: colorBtn }]}
-                onPress={() => setColor(colorBtn)}></TouchableOpacity>
+                style={[styles.btnBorder, { borderWidth: isSelected(colorBtn) ? 3 : 0 }]}>
+                <TouchableOpacity
+                  style={[styles.colorButton, { backgroundColor: colorBtn }]}
+                  onPress={() => setColor(colorBtn)}></TouchableOpacity>
+              </View>
             ))}
           </View>
           <TouchableOpacity
@@ -99,11 +103,21 @@ const styles = StyleSheet.create({
     width: '88%',
     flexDirection: 'row',
   },
+  btnBorder: {
+    borderRadius: 50,
+    borderWidth: 0,
+    justifyContent: 'center',
+    marginRight: 10,
+    borderColor: '#757083',
+  },
   colorButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 10,
+    margin: 4,
+    // padding: 15,
+    // borderWidth: 2,
+    borderColor: 'white',
   },
   startButton: {
     width: '88%',
