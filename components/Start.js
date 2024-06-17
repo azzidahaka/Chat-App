@@ -31,10 +31,14 @@ const Start = ({ navigation }) => {
           <View style={styles.colours}>
             {/* change state of color when each color is selected */}
             {colorBtn.map((colorBtn, index) => (
+              // used parent view to house background change button and edited style to create a round border around selected button
               <View
                 key={index}
-                style={[styles.btnBorder, { borderWidth: isSelected(colorBtn) ? 3 : 0 }]}>
+                style={[styles.btnBorder, { borderWidth: isSelected(colorBtn) ? 3 : 0 }]}> 
                 <TouchableOpacity
+                  accessible={true}
+                  accessibilityRole='button'
+                  accessibilityHint='Changes the background color for the chat room'
                   style={[styles.colorButton, { backgroundColor: colorBtn }]}
                   onPress={() => setColor(colorBtn)}></TouchableOpacity>
               </View>
@@ -42,6 +46,9 @@ const Start = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={styles.startButton}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityHint="navigates to the chat room"
             // use navigation to go to next screen while passing variables to be used as props
             onPress={() => navigation.navigate('Chat', { name: name, color: color })}>
             <Text style={styles.startText}>Start Chatting</Text>
