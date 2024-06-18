@@ -1,12 +1,37 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, Image, TextInput, ImageBackground, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TextInput,
+  ImageBackground,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+
+import { getAuth, signInAnonymously } from 'firebase/auth';
 
 const Start = ({ navigation }) => {
   //use state to set username and color selected
   const [name, setName] = useState('');
   const [color, setColor] = useState('');
+
   const colorBtn = ['#090C08', '#474056', '#8A95A5', '#B9C6AE'];
   const isSelected = (selected) => selected == color;
+  //function to sign in anonymously
+  const auth = getAuth();
+  const signInUser = () => {
+    signInAnonymously(auth)
+      .then((result) => {
+        navigation.navigate('Chat', { userID: result.user.uid, name: name, color: color });
+        Alert.alert('Signed in Successfully!');
+      })
+      .catch((error) => {
+        Alert.alert('Unable to sign in, try later again.');
+      });
+  };
+
   return (
     <View style={styles.container}>
       {/* using ImageBackground component from reactnative library to set background image */}
@@ -34,7 +59,7 @@ const Start = ({ navigation }) => {
               // used parent view to house background change button and edited style to create a round border around selected button
               <View
                 key={index}
-                style={[styles.btnBorder, { borderWidth: isSelected(colorBtn) ? 3 : 0 }]}> 
+                style={[styles.btnBorder, { borderWidth: isSelected(colorBtn) ? 3 : 0 }]}>
                 <TouchableOpacity
                   accessible={true}
                   accessibilityRole='button'
@@ -47,10 +72,10 @@ const Start = ({ navigation }) => {
           <TouchableOpacity
             style={styles.startButton}
             accessible={true}
-            accessibilityRole="button"
-            accessibilityHint="navigates to the chat room"
+            accessibilityRole='button'
+            accessibilityHint='navigates to the chat room'
             // use navigation to go to next screen while passing variables to be used as props
-            onPress={() => navigation.navigate('Chat', { name: name, color: color })}>
+            onPress={signInUser}>
             <Text style={styles.startText}>Start Chatting</Text>
           </TouchableOpacity>
         </View>

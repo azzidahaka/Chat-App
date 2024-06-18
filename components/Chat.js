@@ -2,39 +2,41 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Platform, KeyboardAvoidingView } from 'react-native';
 import { Bubble, GiftedChat } from 'react-native-gifted-chat';
 
-const Chat = ({ route, navigation }) => {
-  const { name, color } = route.params;
+import { collection, getDocs, addDoc, query, onSnapshot, orderBy } from 'firebase/firestore';
+
+const Chat = ({ route, navigation, db }) => {
+  const { userID, name, color } = route.params;
   const [messages, setMessages] = useState([]);
-  //fucting call when user sends message
+
+  //function call when user sends message
   const onSend = (newMessages) => {
-    setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessages));
+    addDoc(collection(db, 'messages'), newMessages[0]);
   };
-  useEffect(() => {
-    setMessages([
-      // object used to display messge once chat loads
-      {
-        _id: 1,
-        text: 'Hello developer',
-        createdAt: new Date(),
-        user: {
-          _id: 2,
-          name: 'React Native',
-          avatar: 'https://placeimg.com/140/140/any',
-        },
-      },
-      //object containing system message
-      {
-        _id: 2,
-        text: 'You’ve entered the chat',
-        createdAt: new Date(),
-        system: true,
-      },
-    ]);
-  }, []);
 
   useEffect(() => {
     navigation.setOptions({ title: name });
+    //query the message collection in firebase and sort by the createddate in descending order
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+    //take a snapshot of collection at momment its called
+    const unsubMessages = onSnapshot(q, (documentsSnapshot) => {
+      let newMessages = [];
+      documentsSnapshot.forEach((doc) => {
+        newMessages.push({
+          _id: doc.id,
+          ...doc.data(),
+          createdAt: new Date(doc.data().createdAt.toMillis()), //convert firebase time stamp object to format for GiftedChat
+        });
+      });
+
+      setMessages(newMessages);
+    });
+
+    //clean up code
+    return () => {
+      if (unsubMessages) unsubMessages();
+    };
   }, []);
+
   return (
     <View style={[styles.container, { backgroundColor: color }]}>
       <GiftedChat
@@ -42,7 +44,8 @@ const Chat = ({ route, navigation }) => {
         renderBubble={renderBubble}
         onSend={(messages) => onSend(messages)}
         user={{
-          _id: 1,
+          _id: userID,
+          name: name,
         }}
       />
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
