@@ -46,6 +46,7 @@ const Chat = ({ route, navigation }) => {
         }}
       />
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
+      {Platform.OS === 'ios' ? <KeyboardAvoidingView behavior='padding' /> : null}
     </View>
   );
 };
