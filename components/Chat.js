@@ -14,6 +14,15 @@ const Chat = ({ route, navigation, db }) => {
     addDoc(collection(db, 'messages'), newMessages[0]);
   };
 
+  //use asyncstorage to store messages localy for offline use
+  const cacheMessages = async (messagesToCache) => {
+    try {
+      await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   useEffect(() => {
     navigation.setOptions({ title: name });
     //query the message collection in firebase and sort by the createddate in descending order
@@ -28,7 +37,7 @@ const Chat = ({ route, navigation, db }) => {
           createdAt: new Date(doc.data().createdAt.toMillis()), //convert firebase time stamp object to format for GiftedChat
         });
       });
-
+      cacheMessages(newMessages);
       setMessages(newMessages);
     });
 
