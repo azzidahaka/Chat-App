@@ -10,6 +10,7 @@ const Stack = createNativeStackNavigator();
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
+
 import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['AsyncStorage has been extracted from']); //Dismiss async deprecated warning
 

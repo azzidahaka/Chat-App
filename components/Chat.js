@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, Platform, KeyboardAvoidingView } from 'react-na
 import { Bubble, GiftedChat } from 'react-native-gifted-chat';
 
 import { collection, getDocs, addDoc, query, onSnapshot, orderBy } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Chat = ({ route, navigation, db }) => {
   const { userID, name, color } = route.params;
