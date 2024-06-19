@@ -1,14 +1,14 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
+import { useNetInfo } from '@react-native-community/netinfo'; //used to get  network connection state
+import { useEffect } from 'react';
+import { LogBox, Alert } from 'react-native';
 import Start from './components/Start';
 import Chat from './components/Chat';
 
 const Stack = createNativeStackNavigator();
-
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-
-import { LogBox } from 'react-native';
 LogBox.ignoreLogs(['AsyncStorage has been extracted from']); //Dismiss async deprecated warning
 
 export default function App() {
@@ -20,12 +20,20 @@ export default function App() {
     messagingSenderId: '750788508120',
     appId: '1:750788508120:web:30d75caad942c84fc51aad',
   };
-
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
+  const connectionStatus = useNetInfo();
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert('Connection Lost!');
+      //stop firebase from attempting to connect to db when offline
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName='Start'>
@@ -36,6 +44,7 @@ export default function App() {
         <Stack.Screen name='Chat'>
           {(props) => (
             <Chat
+              isConnected={connectionStatus.isConnected}
               db={db}
               {...props}
             />
