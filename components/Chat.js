@@ -4,6 +4,7 @@ import { Bubble, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 
 import { collection, getDocs, addDoc, query, onSnapshot, orderBy } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import customActions from './customActions';
 
 const Chat = ({ route, navigation, db, isConnected }) => {
   const { userID, name, color } = route.params;
@@ -32,6 +33,9 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   const renderInputToolbar = (props) => {
     if (isConnected) return <InputToolbar {...props} />;
     else return null;
+  };
+  const customA = () => {
+    return <customActions />;
   };
   useEffect(() => {
     navigation.setOptions({ title: name });
@@ -68,6 +72,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         messages={messages}
         renderBubble={renderBubble}
         renderInputToolbar={renderInputToolbar}
+        customA={customA}
         onSend={(messages) => onSend(messages)}
         user={{
           _id: userID,
