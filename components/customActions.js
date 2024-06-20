@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker'; //Library that gives access to select images and videos
+import * as MediaLibrary from 'expo-media-library'; //library lets saves pictures taken in app
 
-const customActions = () => {
+const CustomActions = () => {
   const [image, setImage] = useState(null);
 
   //function to choose image from library
@@ -12,27 +13,26 @@ const customActions = () => {
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
       });
-
-      if (!result.canceled)
-        setImage(
-          result.assets[0]
-        ); //assets is the number of images selected, 0 means user can select just one file
+      //assets is the number of images selected, 0 means user can select just one file
+      if (!result.canceled) setImage(result.assets[0]);
       else setImage(null);
     }
   };
 
   //function to take picture
   const takePhoto = async () => {
-    let permissions = await ImagePicker.requestCameraPermissionsAsync(); //get user permission
+    let permissions = await ImagePicker.requestCameraPermissionsAsync();
 
     if (permissions?.granted) {
       let result = await ImagePicker.launchCameraAsync();
 
-      if (!result.canceled)
-        setImage(
-          result.assets[0]
-        ); //assets is the number of images selected, 0 means user can select just one file
-      else setImage(null);
+      if (!result.canceled) {
+        let mediaLibraryPermissions = await MediaLibrary.requestPermissionsAsync();
+        //if permission is granted, save captured image to device library
+        if (mediaLibraryPermissions?.granted) await MediaLibrary.saveToLibraryAsync(result.assets[0].uri);
+        //assets is the number of images selected, 0 means user can select just one file
+        setImage(result.assets[0]);
+      } else setImage(null);
     }
   };
 
@@ -44,7 +44,9 @@ const customActions = () => {
       />
       <Button
         title='Take a photo'
-        onPress={() => {takePhoto}}
+        onPress={() => {
+          takePhoto;
+        }}
       />
     </View>
   );
@@ -57,4 +59,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default customActions;
+export default CustomActions;
