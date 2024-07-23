@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, Platform, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, Platform, KeyboardAvoidingView, TouchableOpacity, Text } from 'react-native';
 import { Bubble, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import MapView from 'react-native-maps';
+import { Audio } from 'expo-av';
 import { collection, getDocs, addDoc, query, onSnapshot, orderBy } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomActions from './CustomActions';
 
-const Chat = ({ route, navigation, db, isConnected }) => {
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
   const { userID, name, color } = route.params;
   const [messages, setMessages] = useState([]);
+  let soundObject = null;
 
   //function call when user sends message
   const onSend = (newMessages) => {
@@ -36,7 +38,13 @@ const Chat = ({ route, navigation, db, isConnected }) => {
   };
   //renders custom action button in inputfield
   const renderCustomActions = (props) => {
-    return <CustomActions {...props} />;
+    return (
+      <CustomActions
+        userID={userID}
+        storage={storage}
+        {...props}
+      />
+    );
   };
 
   const renderCustomView = (props) => {
@@ -56,32 +64,61 @@ const Chat = ({ route, navigation, db, isConnected }) => {
     }
     return null;
   };
+
+  const renderAudioBubble = (props) => {
+    return (
+      <View {...props}>
+        <TouchableOpacity
+          style={{ backgroundColor: '#FF0', borderRadius: 10, margin: 5 }}
+          onPress={async () => {
+            const { sound } = await Audio.Sound.createAsync({ uri: props.currentMessage.audio });
+            await sound.playAsync();
+          }}>
+          <Text style={{ textAlign: 'center', color: 'black', padding: 5 }}>Play Sound</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderMessageAudio = (props) => {
+    return (
+      <View {...props}>
+        <TouchableOpacity
+          style={{ backgroundColor: '#FF0', borderRadius: 10, margin: 5 }}
+          onPress={async () => {
+            if (soundObject) soundObject.unloadAsync();
+            const { sound } = await Audio.Sound.createAsync({ uri: props.currentMessage.audio });
+            soundObject = sound;
+            await sound.playAsync();
+          }}>
+          <Text style={{ textAlign: 'center', color: 'black', padding: 5 }}>Play Sound</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   useEffect(() => {
     navigation.setOptions({ title: name });
-    let unsubMessages;
     if (isConnected === true) {
-      // unregister current onSnapshot() listener to avoid registering multiple listeners when useEffect code is re-executed.
       if (unsubMessages) unsubMessages();
       unsubMessages = null;
-      //query the message collection in firebase and sort by the createddate in descending order
       const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
-      //take a snapshot of collection at momment its called
-      unsubMessages = onSnapshot(q, (documentsSnapshot) => {
+      unsubMessages = onSnapshot(q, (docs) => {
         let newMessages = [];
-        documentsSnapshot.forEach((doc) => {
+        docs.forEach((doc) => {
           newMessages.push({
-            _id: doc.id,
+            id: doc.id,
             ...doc.data(),
-            createdAt: new Date(doc.data().createdAt.toMillis()), //convert firebase time stamp object to format for GiftedChat
+            createdAt: new Date(doc.data().createdAt.toMillis()),
           });
         });
         cacheMessages(newMessages);
         setMessages(newMessages);
       });
     } else loadCachedMessages();
-    //clean up code
     return () => {
       if (unsubMessages) unsubMessages();
+      if (soundObject) soundObject.unloadAsync();
     };
   }, [isConnected]);
 
@@ -93,6 +130,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         renderInputToolbar={renderInputToolbar}
         renderActions={renderCustomActions}
         renderCustomView={renderCustomView}
+        renderMessageAudio={renderAudioBubble}
         onSend={(messages) => onSend(messages)}
         user={{
           _id: userID,

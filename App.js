@@ -4,7 +4,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
 import { useNetInfo } from '@react-native-community/netinfo'; //used to get  network connection state
 import { useEffect } from 'react';
-
+import { getStorage } from 'firebase/storage';
 import { LogBox, Alert } from 'react-native';
 import Start from './components/Start';
 import Chat from './components/Chat';
@@ -13,7 +13,6 @@ const Stack = createNativeStackNavigator();
 LogBox.ignoreLogs(['AsyncStorage has been extracted from']); //Dismiss async deprecated warning
 
 export default function App() {
-
 
   const firebaseConfig = {
     apiKey: 'AIzaSyDcy2h_2gWEz9-3vLmE2lDF2dCtTuLwFyk',
@@ -28,7 +27,10 @@ export default function App() {
 
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
-  const connectionStatus = useNetInfo();//get connection status using netinfo library
+  const storage = getStorage(app);
+
+  const connectionStatus = useNetInfo(); //get connection status using netinfo library
+
   useEffect(() => {
     if (connectionStatus.isConnected === false) {
       Alert.alert('Connection Lost!');
@@ -50,6 +52,7 @@ export default function App() {
             <Chat
               isConnected={connectionStatus.isConnected}
               db={db}
+              storage={storage}
               {...props}
             />
           )}
