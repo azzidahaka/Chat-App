@@ -2,11 +2,11 @@
 A chat app for mobile devices using React Native. The app will provide users a chat interface and options to share images and their location.
 
 ## Features
--Create a username that can be used to identify users in the Chat room
--Change the background color of the chat room
--Send a map view of user's location
--Take and send pictures directly from the APP
--Send media saved in photo library
+- Create a username that can be used to identify users in the Chat room
+- Change the background color of the chat room
+- Send a map view of the user's location
+- Take and send pictures directly from the APP
+- Send media saved in the photo library
 
 ## Technologies Used
 - React Native
