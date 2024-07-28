@@ -15,9 +15,9 @@ const CustomActions = ({ wrapperStyle, iconTextStyle, onSend, storage, userID })
   // two Alert buttons
   useEffect(() => {
     return () => {
-    if (recordingObject) recordingObject.stopAndUnloadAsync();
-    }
-    }, []);
+      if (recordingObject) recordingObject.stopAndUnloadAsync();
+    };
+  }, []);
 
   //function generates unique refrence string eachtime new file is uploaded
   const generateReference = (uri) => {
@@ -72,62 +72,6 @@ const CustomActions = ({ wrapperStyle, iconTextStyle, onSend, storage, userID })
     } else Alert.alert("Permissions haven't been granted.");
   };
 
-  //function to record audio
-  const startRecording = async () => {
-    try {
-      let permissions = await Audio.requestPermissionsAsync();
-      if (permissions?.granted) {
-        // iOS specific config to allow recording on iPhone devices
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: true,
-          playsInSilentModeIOS: true,
-        });
-        Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY).then((results) => {
-          recordingObject = recording;
-          Alert.alert(
-            'You are recording...',
-            undefined,
-            [
-              {
-                text: 'Cancel',
-                onPress: () => {
-                  stopRecording();
-                },
-              },
-              {
-                text: 'Stop and Send',
-                onPress: () => {
-                  sendRecordedSound();
-                },
-              },
-            ],
-            { cancelable: false }
-          );
-        });
-      }
-    } catch (err) {
-      Alert.alert('Failed to record!');
-    }
-  };
-  const stopRecording = async () => {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: false,
-    });
-    await recordingObject.stopAndUnloadAsync();
-  };
-  const sendRecordedSound = async () => {
-    await stopRecording();
-    const uniqueRefString = generateReference(recordingObject.getURI());
-    const newUploadRef = ref(storage, uniqueRefString);
-    const response = await fetch(recordingObject.getURI());
-    const blob = await response.blob();
-    uploadBytes(newUploadRef, blob).then(async (snapshot) => {
-      const soundURL = await getDownloadURL(snapshot.ref);
-      onSend({ audio: soundURL });
-    });
-  };
-
   //display ActionSheet with four options
   const onActionPress = () => {
     const options = ['Choose From Library', 'Take Picture', 'Send Location', 'Cancel'];
@@ -147,8 +91,6 @@ const CustomActions = ({ wrapperStyle, iconTextStyle, onSend, storage, userID })
             return;
           case 2:
             getLocation();
-          case 3:
-            startRecording();
             return;
           default:
         }
@@ -179,6 +121,8 @@ const styles = StyleSheet.create({
     borderColor: '#b2b2b2',
     borderWidth: 2,
     flex: 1,
+    justifyContent: 'center', // Center content vertically
+    alignItems: 'center',
   },
   iconText: {
     color: '#b2b2b2',
